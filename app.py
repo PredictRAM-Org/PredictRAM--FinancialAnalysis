@@ -16,10 +16,13 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 income_statement = fundamental_data.get('IncomeStatement', {})
                 
                 # Use a list comprehension to extract values for specified dates
-                filtered_income_statement = [
-                    {'Date': date, **(income_statement.get(date, {}) or {})}
-                    for date in selected_dates
-                ]
+                filtered_income_statement = []
+                for date in selected_dates:
+                    data_for_date = income_statement.get(date, {})
+                    if data_for_date:
+                        filtered_income_statement.append({'Date': date, **data_for_date})
+                    else:
+                        st.write(f"No data found for {date} in the Income Statement.")
                 
                 # Create a DataFrame for the table
                 income_statement_df = pd.DataFrame(filtered_income_statement).set_index('Date')
