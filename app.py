@@ -112,18 +112,14 @@ if st.button("Fetch Financial Statements"):
         latest_data = income_statement_df.loc[latest_date]
         total_revenue = latest_data['Total Revenue/Income']
         
-        # Handle division by zero
-        if total_revenue == 0:
-            st.warning("Total Revenue is zero. Unable to perform vertical analysis.")
-        else:
-            # Calculate percentages
+        # Avoid division by zero
+        if total_revenue != 0:
             percentages = latest_data[['Total Operating Expense', 'Operating Income/Profit', 'EBITDA', 'Net Income']] / total_revenue * 100
 
-            # Plot vertical analysis as a bar chart
+            # Create a bar chart for vertical analysis
             fig_vertical = px.bar(percentages, x=percentages.index, y=percentages.columns,
-                                  title=f"Vertical Analysis for {stock_to_search} on {latest_date}",
-                                  labels={'value': 'Percentage'},
-                                  line_shape="linear",
-                                  markers=True)
+                          title=f"Vertical Analysis for {stock_to_search} on {latest_date}",
+                          labels={'value': 'Percentage'},
+                          barmode='stack')
 
             st.plotly_chart(fig_vertical)
