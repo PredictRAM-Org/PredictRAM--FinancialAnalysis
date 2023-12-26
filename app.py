@@ -14,9 +14,17 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 
                 # Filter Income Statement data for specified dates
                 income_statement = fundamental_data.get('IncomeStatement', {})
-                filtered_income_statement = {date: income_statement.get(date, {}) for date in selected_dates}
                 
-                st.table(pd.DataFrame(filtered_income_statement).transpose())
+                # Use a list comprehension to extract values for specified dates
+                filtered_income_statement = [
+                    {'Date': date, **income_statement.get(date, {})}
+                    for date in selected_dates
+                ]
+                
+                # Create a DataFrame for the table
+                income_statement_df = pd.DataFrame(filtered_income_statement).set_index('Date')
+                
+                st.table(income_statement_df)
                 st.write(f"Fundamental data for {stock_name} loaded successfully.")
             return fundamental_data
         except json.JSONDecodeError as e:
