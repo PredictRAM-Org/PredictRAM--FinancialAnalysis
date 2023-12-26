@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-# Function to read fundamental data from JSON files for specified date range
+# Function to read fundamental data from JSON files for the specified date range
 def read_fundamental_data(financial_folder, stock_name, start_date, end_date):
     fundamental_file_path = os.path.join(financial_folder, f"{stock_name}.json")
     if os.path.exists(fundamental_file_path):
@@ -12,16 +12,16 @@ def read_fundamental_data(financial_folder, stock_name, start_date, end_date):
             with open(fundamental_file_path, 'r') as f:
                 fundamental_data = json.load(f)
                 st.write(f"Financial Data for {stock_name} for Selected Date Range:")
-                
+
                 # Check if 'IncomeStatement', 'BalanceSheet', and 'CashFlow' are lists
                 income_statements = fundamental_data.get('IncomeStatement', [])
                 balance_sheets = fundamental_data.get('BalanceSheet', [])
                 cash_flows = fundamental_data.get('CashFlow', [])
-                
+
                 if not isinstance(income_statements, list) or not isinstance(balance_sheets, list) or not isinstance(cash_flows, list):
                     st.write("Error: 'IncomeStatement', 'BalanceSheet', or 'CashFlow' is not a list.")
                     return None
-                
+
                 # Create DataFrames for the tables
                 data_for_date_range = []
                 for statement in income_statements:
@@ -29,28 +29,28 @@ def read_fundamental_data(financial_folder, stock_name, start_date, end_date):
                     if start_date <= date <= end_date:
                         balance_sheet_for_date = next((sheet for sheet in balance_sheets if sheet.get('Date', '') == date), {})
                         cash_flow_for_date = next((flow for flow in cash_flows if flow.get('Date', '') == date), {})
-                        
+
                         data_for_date = {'Date': date, **statement, **balance_sheet_for_date, **cash_flow_for_date}
                         data_for_date_range.append(data_for_date)
-                
+
                 # Create DataFrames for the tables
                 data_df = pd.DataFrame(data_for_date_range).set_index('Date')
-                income_statement_df = data_df.filter(regex='^(?!BalanceSheet|CashFlow).*')
-                balance_sheet_df = data_df.filter(regex='^BalanceSheet.*')
-                cash_flow_df = data_df.filter(regex='^CashFlow.*')
-                
+                income_statement_df = data_df.filter(regex='^(?!BalanceSheet|CashFlow).*').sort_index()
+                balance_sheet_df = data_df.filter(regex='^BalanceSheet.*').sort_index()
+                cash_flow_df = data_df.filter(regex='^CashFlow.*').sort_index()
+
                 # Display tables
-                st.write("Income Statement Data:")
+                st.write("Income Statement Data (Ascending Order):")
                 st.table(income_statement_df)
-                
-                st.write("Balance Sheet Data:")
+
+                st.write("Balance Sheet Data (Ascending Order):")
                 st.table(balance_sheet_df)
-                
-                st.write("Cash Flow Data:")
+
+                st.write("Cash Flow Data (Ascending Order):")
                 st.table(cash_flow_df)
-                
+
                 st.write(f"Fundamental data for {stock_name} loaded successfully.")
-                
+
                 return fundamental_data
         except json.JSONDecodeError as e:
             st.write(f"Error decoding JSON for {stock_name}.json. Details: {str(e)}")
@@ -85,14 +85,14 @@ financial_folder = "financial"
 # Read fundamental data for the searched stock
 if st.button("Fetch Financial Statements"):
     st.write(f"Fetching Financial Statements for {stock_to_search} for Date Range: {start_date} to {end_date}...")
-    
+
     # Read fundamental data for the searched stock
     fundamental_data = read_fundamental_data(financial_folder, stock_to_search, start_date, end_date)
 
     if fundamental_data is not None:
         # Extract Income Statement data
         income_statements = fundamental_data.get('IncomeStatement', [])
-        income_statement_df = pd.DataFrame(income_statements).set_index('Date')
+        income_statement_df = pd.DataFrame(income_statements).set_index('Date').sort_index()
 
         # Create an interactive line chart for the selected metrics
         fig_trends = px.line(income_statement_df,
