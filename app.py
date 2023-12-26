@@ -12,18 +12,18 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 fundamental_data = json.load(f)
                 st.write(f"Income Statement for {stock_name} for Selected Dates:")
                 
-                # Check if 'IncomeStatement' is a list or a dictionary
-                income_statement = fundamental_data.get('IncomeStatement', {})
-                if isinstance(income_statement, list):
-                    st.write("Error: 'IncomeStatement' is a list instead of a dictionary.")
+                # Check if 'IncomeStatement' is a list
+                income_statements = fundamental_data.get('IncomeStatement', [])
+                if not isinstance(income_statements, list):
+                    st.write("Error: 'IncomeStatement' is not a list.")
                     return None
                 
                 # Use a list comprehension to extract values for specified dates
                 filtered_income_statement = []
-                for date in selected_dates:
-                    data_for_date = income_statement.get(date, {})
-                    if data_for_date:
-                        filtered_income_statement.append({'Date': date, **data_for_date})
+                for income_statement in income_statements:
+                    date = income_statement.get('Date', '')
+                    if date in selected_dates:
+                        filtered_income_statement.append({'Date': date, **income_statement})
                     else:
                         st.write(f"No data found for {date} in the Income Statement.")
                 
@@ -32,6 +32,7 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 
                 st.table(income_statement_df)
                 st.write(f"Fundamental data for {stock_name} loaded successfully.")
+                
             return fundamental_data
         except json.JSONDecodeError as e:
             st.write(f"Error decoding JSON for {stock_name}.json. Details: {str(e)}")
