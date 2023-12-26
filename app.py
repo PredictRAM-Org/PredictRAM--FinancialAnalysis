@@ -65,23 +65,29 @@ st.title("Stock Financial Statement Analysis for Date Range")
 # User input for stock search
 stock_to_search = st.text_input("Enter Stock Name to Search:")
 
-# Date range input
-start_date = st.date_input("Select Start Date:")
-end_date = st.date_input("Select End Date:")
+# Given list of dates
+given_dates = [
+    "Dec-15", "Mar-16", "Jun-16", "Sep-16", "Dec-16", "Mar-17", "Jun-17", "Sep-17",
+    "Dec-17", "Mar-18", "Jun-18", "Sep-18", "Dec-18", "Mar-19", "Jun-19", "Sep-19", "Dec-19",
+    "Mar-20", "Jun-20", "Sep-20", "Dec-20", "Mar-21", "Jun-21", "Sep-21", "Dec-21", "Mar-22",
+    "Jun-22", "Sep-22", "Dec-22", "Mar-23", "Jun-23", "Sep-23"
+]
 
-# Convert date format to match the input format
-start_date_str = start_date.strftime("%b-%y")
-end_date_str = end_date.strftime("%b-%y")
+# Dropdown menu for start date
+start_date = st.selectbox("Select Start Date:", given_dates)
+
+# Dropdown menu for end date
+end_date = st.selectbox("Select End Date:", given_dates)
 
 # Financial folder path
 financial_folder = "financial"
 
 # Read fundamental data for the searched stock
 if st.button("Fetch Financial Statements"):
-    st.write(f"Fetching Financial Statements for {stock_to_search} for Date Range: {start_date_str} to {end_date_str}...")
+    st.write(f"Fetching Financial Statements for {stock_to_search} for Date Range: {start_date} to {end_date}...")
     
     # Read fundamental data for the searched stock
-    fundamental_data = read_fundamental_data(financial_folder, stock_to_search, start_date_str, end_date_str)
+    fundamental_data = read_fundamental_data(financial_folder, stock_to_search, start_date, end_date)
 
     if fundamental_data is not None:
         # Extract Income Statement data
@@ -92,7 +98,7 @@ if st.button("Fetch Financial Statements"):
         fig_trends = px.line(income_statement_df,
                              x=income_statement_df.index,
                              y=['Total Revenue/Income', 'Total Operating Expense', 'Operating Income/Profit', 'EBITDA', 'Net Income'],
-                             title=f"Trends Analysis for {stock_to_search} from {start_date_str} to {end_date_str}",
+                             title=f"Trends Analysis for {stock_to_search} from {start_date} to {end_date}",
                              labels={'value': 'Amount'},
                              line_shape="linear",
                              markers=True)
