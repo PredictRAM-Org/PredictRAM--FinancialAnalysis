@@ -10,28 +10,43 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
         try:
             with open(fundamental_file_path, 'r') as f:
                 fundamental_data = json.load(f)
-                st.write(f"Income Statement for {stock_name} for Selected Dates:")
+                st.write(f"Financial Data for {stock_name} for Selected Dates:")
                 
-                # Check if 'IncomeStatement' is a list
+                # Check if 'IncomeStatement', 'BalanceSheet', and 'CashFlow' are lists
                 income_statements = fundamental_data.get('IncomeStatement', [])
-                if not isinstance(income_statements, list):
-                    st.write("Error: 'IncomeStatement' is not a list.")
+                balance_sheets = fundamental_data.get('BalanceSheet', [])
+                cash_flows = fundamental_data.get('CashFlow', [])
+                
+                if not isinstance(income_statements, list) or not isinstance(balance_sheets, list) or not isinstance(cash_flows, list):
+                    st.write("Error: 'IncomeStatement', 'BalanceSheet', or 'CashFlow' is not a list.")
                     return None
                 
                 # Use a list comprehension to filter values for specified dates
-                filtered_income_statement = [
-                    {'Date': statement.get('Date', ''), **statement}
-                    for statement in income_statements
-                    if statement.get('Date', '') in selected_dates
-                ]
+                filtered_data = []
+                for date in selected_dates:
+                    income_statement_for_date = next((statement for statement in income_statements if statement.get('Date', '') == date), {})
+                    balance_sheet_for_date = next((sheet for sheet in balance_sheets if sheet.get('Date', '') == date), {})
+                    cash_flow_for_date = next((flow for flow in cash_flows if flow.get('Date', '') == date), {})
+                    
+                    data_for_date = {'Date': date, **income_statement_for_date, **balance_sheet_for_date, **cash_flow_for_date}
+                    filtered_data.append(data_for_date)
                 
-                # Create a DataFrame for the table
-                income_statement_df = pd.DataFrame(filtered_income_statement).set_index('Date')
+                # Create DataFrames for the tables
+                data_df = pd.DataFrame(filtered_data).set_index('Date')
+                income_statement_df = data_df.filter(regex='^(?!BalanceSheet|CashFlow).*')
+                balance_sheet_df = data_df.filter(regex='^BalanceSheet.*')
+                cash_flow_df = data_df.filter(regex='^CashFlow.*')
                 
-                # Sort the DataFrame by the date column in ascending order
-                income_statement_df = income_statement_df.reindex(selected_dates)
-                
+                # Display tables
+                st.write("Income Statement Data:")
                 st.table(income_statement_df)
+                
+                st.write("Balance Sheet Data:")
+                st.table(balance_sheet_df)
+                
+                st.write("Cash Flow Data:")
+                st.table(cash_flow_df)
+                
                 st.write(f"Fundamental data for {stock_name} loaded successfully.")
                 
             return fundamental_data
@@ -43,7 +58,7 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
         return None
 
 # Streamlit UI
-st.title("Stock Income Statement Analysis for Specific Dates")
+st.title("Stock Financial Statement Analysis for Specific Dates")
 
 # User input for stock search
 stock_to_search = st.text_input("Enter Stock Name to Search:")
@@ -60,12 +75,12 @@ selected_dates = [
 financial_folder = "financial"
 
 # Read fundamental data for the searched stock
-if st.button("Fetch Income Statement"):
-    st.write(f"Fetching Income Statement for {stock_to_search} for Selected Dates...")
+if st.button("Fetch Financial Statements"):
+    st.write(f"Fetching Financial Statements for {stock_to_search} for Selected Dates...")
     
     # Read fundamental data for the searched stock
     fundamental_data = read_fundamental_data(financial_folder, stock_to_search, selected_dates)
 
     if fundamental_data is not None:
-        # Additional analysis or visualization based on the Income Statement can be added here.
+        # Additional analysis or visualization based on the financial statements can be added here.
         pass
