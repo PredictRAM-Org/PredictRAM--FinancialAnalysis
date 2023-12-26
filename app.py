@@ -12,8 +12,11 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 fundamental_data = json.load(f)
                 st.write(f"Income Statement for {stock_name} for Selected Dates:")
                 
-                # Filter Income Statement data for specified dates
+                # Check if 'IncomeStatement' is a list or a dictionary
                 income_statement = fundamental_data.get('IncomeStatement', {})
+                if isinstance(income_statement, list):
+                    st.write("Error: 'IncomeStatement' is a list instead of a dictionary.")
+                    return None
                 
                 # Use a list comprehension to extract values for specified dates
                 filtered_income_statement = []
