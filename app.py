@@ -28,6 +28,9 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 # Create a DataFrame for the table
                 income_statement_df = pd.DataFrame(filtered_income_statement).set_index('Date')
                 
+                # Sort the DataFrame by the date column in ascending order
+                income_statement_df = income_statement_df.reindex(selected_dates)
+                
                 st.table(income_statement_df)
                 st.write(f"Fundamental data for {stock_name} loaded successfully.")
                 
