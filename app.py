@@ -104,8 +104,3 @@ if st.button("Fetch Financial Statements"):
                              markers=True)
 
         st.plotly_chart(fig_trends)
-
-        # Create a table for percentage changes over time
-        percentage_changes = income_statement_df.pct_change().dropna() * 100
-        st.write("Percentage Changes Over Time:")
-        st.table(percentage_changes)
