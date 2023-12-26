@@ -21,18 +21,18 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                     st.write("Error: 'IncomeStatement', 'BalanceSheet', or 'CashFlow' is not a list.")
                     return None
                 
-                # Use a list comprehension to filter values for specified dates
-                filtered_data = []
+                # Create DataFrames for the tables
+                data_for_dates = []
                 for date in selected_dates:
                     income_statement_for_date = next((statement for statement in income_statements if statement.get('Date', '') == date), {})
                     balance_sheet_for_date = next((sheet for sheet in balance_sheets if sheet.get('Date', '') == date), {})
                     cash_flow_for_date = next((flow for flow in cash_flows if flow.get('Date', '') == date), {})
                     
                     data_for_date = {'Date': date, **income_statement_for_date, **balance_sheet_for_date, **cash_flow_for_date}
-                    filtered_data.append(data_for_date)
+                    data_for_dates.append(data_for_date)
                 
                 # Create DataFrames for the tables
-                data_df = pd.DataFrame(filtered_data).set_index('Date')
+                data_df = pd.DataFrame(data_for_dates).set_index('Date')
                 income_statement_df = data_df.filter(regex='^(?!BalanceSheet|CashFlow).*')
                 balance_sheet_df = data_df.filter(regex='^BalanceSheet.*')
                 cash_flow_df = data_df.filter(regex='^CashFlow.*')
