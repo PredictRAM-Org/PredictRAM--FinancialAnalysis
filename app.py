@@ -2,6 +2,7 @@ import os
 import json
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 # Function to read fundamental data from JSON files for specified dates
 def read_fundamental_data(financial_folder, stock_name, selected_dates):
@@ -49,7 +50,7 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 
                 st.write(f"Fundamental data for {stock_name} loaded successfully.")
                 
-            return fundamental_data
+                return fundamental_data
         except json.JSONDecodeError as e:
             st.write(f"Error decoding JSON for {stock_name}.json. Details: {str(e)}")
             return None
@@ -82,5 +83,32 @@ if st.button("Fetch Financial Statements"):
     fundamental_data = read_fundamental_data(financial_folder, stock_to_search, selected_dates)
 
     if fundamental_data is not None:
-        # Additional analysis or visualization based on the financial statements can be added here.
-        pass
+        # Extract Income Statement data
+        income_statements = fundamental_data.get('IncomeStatement', [])
+        income_statement_df = pd.DataFrame(income_statements).set_index('Date')
+
+        # Perform horizontal analysis (changes over time)
+        fig_horizontal = px.line(income_statement_df, x=income_statement_df.index, y=['Total Revenue/Income', 'Total Operating Expense', 'Operating Income/Profit', 'EBITDA', 'Net Income'],
+                      title=f"Horizontal Analysis for {stock_to_search}",
+                      labels={'value': 'Amount'},
+                      line_shape="linear",
+                      markers=True)
+
+        st.plotly_chart(fig_horizontal)
+
+        # Perform vertical analysis (percentage of total) for the latest date
+        latest_date = income_statement_df.index[-1]
+        latest_data = income_statement_df.loc[latest_date]
+        total_revenue = latest_data['Total Revenue/Income']
+        
+        # Calculate percentages
+        percentages = latest_data[['Total Operating Expense', 'Operating Income/Profit', 'EBITDA', 'Net Income']] / total_revenue * 100
+
+        # Plot vertical analysis as a bar chart
+        fig_vertical = px.bar(percentages, x=percentages.index, y=percentages.columns,
+                              title=f"Vertical Analysis for {stock_to_search} on {latest_date}",
+                              labels={'value': 'Percentage'},
+                              line_shape="linear",
+                              markers=True)
+
+        st.plotly_chart(fig_vertical)
