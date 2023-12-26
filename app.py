@@ -9,7 +9,10 @@ def load_data(folder_path):
         if filename.endswith(".json"):
             file_path = os.path.join(folder_path, filename)
             with open(file_path, "r") as file:
-                data[filename] = pd.read_json(file)
+                # Specify the orient parameter based on your JSON structure
+                # 'split' is used when the JSON file has columns as a list of objects
+                # 'records' can be used if each record is a dictionary
+                data[filename] = pd.read_json(file, orient='split')
     return data
 
 # Function to display tables for a given financial statement
