@@ -26,7 +26,7 @@ def main():
     st.title("Financial Data Viewer")
 
     # Set the path to your financial folder
-    financial_folder_path = "path/to/your/financial/folder"
+    financial_folder_path = "financial"
 
     # Load financial data
     financial_data = load_data(financial_folder_path)
