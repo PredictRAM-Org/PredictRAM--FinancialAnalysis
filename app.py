@@ -1,49 +1,43 @@
-import streamlit as st
-import pandas as pd
 import os
+import json
+import pandas as pd
+import streamlit as st
 
-# Function to load financial data from JSON files
-def load_data(folder_path):
-    data = {}
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".json"):
-            file_path = os.path.join(folder_path, filename)
-            with open(file_path, "r") as file:
-                # Specify the orient parameter based on your JSON structure
-                # 'split' is used when the JSON file has columns as a list of objects
-                # 'records' can be used if each record is a dictionary
-                data[filename] = pd.read_json(file, orient='split')
-    return data
+# Function to read fundamental data from JSON files
+def read_fundamental_data(financial_folder, stock_name):
+    fundamental_file_path = os.path.join(financial_folder, f"{stock_name}.json")
+    if os.path.exists(fundamental_file_path):
+        try:
+            with open(fundamental_file_path, 'r') as f:
+                fundamental_data = json.load(f)
+                st.write(f"Income Statement for {stock_name}:")
+                income_statement = fundamental_data.get('IncomeStatement', {})
+                st.table(pd.DataFrame(income_statement))
+                st.write(f"Fundamental data for {stock_name} loaded successfully.")
+            return fundamental_data
+        except json.JSONDecodeError as e:
+            st.write(f"Error decoding JSON for {stock_name}.json. Details: {str(e)}")
+            return None
+    else:
+        st.write(f"Warning: Fundamental data not found for {stock_name}. Skipping. Path: {fundamental_file_path}")
+        return None
 
-# Function to display tables for a given financial statement
-def display_table(data, statement_name, dates):
-    st.subheader(statement_name)
-    for date in dates:
-        st.write(f"## {date}")
-        if date in data:
-            st.table(data[date])
-        else:
-            st.warning(f"No data available for {date}")
+# Streamlit UI
+st.title("Stock Income Statement Analysis")
 
-def main():
-    st.title("Financial Data Viewer")
+# User input for stock search
+stock_to_search = st.text_input("Enter Stock Name to Search:")
 
-    # Set the path to your financial folder
-    financial_folder_path = "financial"
+# Financial folder path
+financial_folder = "financial"
 
-    # Load financial data
-    financial_data = load_data(financial_folder_path)
+# Read fundamental data for the searched stock
+if st.button("Fetch Income Statement"):
+    st.write(f"Fetching Income Statement for {stock_to_search}...")
+    
+    # Read fundamental data for the searched stock
+    fundamental_data = read_fundamental_data(financial_folder, stock_to_search)
 
-    # Specify the dates
-    statement_dates = ["Sep-15", "Dec-15", "Mar-16", "Jun-16", "Sep-16", "Dec-16", "Mar-17", "Jun-17", "Sep-17",
-                       "Dec-17", "Mar-18", "Jun-18", "Sep-18", "Dec-18", "Mar-19", "Jun-19", "Sep-19", "Dec-19",
-                       "Mar-20", "Jun-20", "Sep-20", "Dec-20", "Mar-21", "Jun-21", "Sep-21", "Dec-21", "Mar-22",
-                       "Jun-22", "Sep-22", "Dec-22", "Mar-23", "Jun-23", "Sep-23"]
-
-    # Display tables for each financial statement
-    display_table(financial_data, "Income Statement", statement_dates)
-    display_table(financial_data, "Balance Sheet", statement_dates)
-    display_table(financial_data, "Cash Flow", statement_dates)
-
-if __name__ == "__main__":
-    main()
+    if fundamental_data is not None:
+        # Additional analysis or visualization based on the Income Statement can be added here.
+        pass
