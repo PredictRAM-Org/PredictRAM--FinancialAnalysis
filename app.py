@@ -17,7 +17,7 @@ def read_fundamental_data(financial_folder, stock_name, selected_dates):
                 
                 # Use a list comprehension to extract values for specified dates
                 filtered_income_statement = [
-                    {'Date': date, **income_statement.get(date, {})}
+                    {'Date': date, **(income_statement.get(date, {}) or {})}
                     for date in selected_dates
                 ]
                 
@@ -42,7 +42,7 @@ stock_to_search = st.text_input("Enter Stock Name to Search:")
 
 # Selected dates
 selected_dates = [
-    "Sep-15", "Dec-15", "Mar-16", "Jun-16", "Sep-16", "Dec-16", "Mar-17", "Jun-17", "Sep-17",
+    "Dec-00", "Dec-15", "Mar-16", "Jun-16", "Sep-16", "Dec-16", "Mar-17", "Jun-17", "Sep-17",
     "Dec-17", "Mar-18", "Jun-18", "Sep-18", "Dec-18", "Mar-19", "Jun-19", "Sep-19", "Dec-19",
     "Mar-20", "Jun-20", "Sep-20", "Dec-20", "Mar-21", "Jun-21", "Sep-21", "Dec-21", "Mar-22",
     "Jun-22", "Sep-22", "Dec-22", "Mar-23", "Jun-23", "Sep-23"
