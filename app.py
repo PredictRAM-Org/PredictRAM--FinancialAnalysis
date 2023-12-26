@@ -45,3 +45,20 @@ if st.button("Fetch Financial Statements"):
                       markers=True)
 
         st.plotly_chart(fig)
+
+        # Perform vertical analysis (percentage of total) for the latest date
+        latest_date = income_statement_df.index[-1]
+        latest_data = income_statement_df.loc[latest_date]
+        total_revenue = latest_data['Total Revenue/Income']
+        
+        # Calculate percentages
+        percentages = latest_data[['Total Operating Expense', 'Operating Income/Profit', 'EBITDA', 'Net Income']] / total_revenue * 100
+
+        # Plot vertical analysis as a bar chart
+        fig_vertical = px.bar(percentages, x=percentages.index, y=percentages.columns,
+                              title=f"Vertical Analysis for {stock_to_search} on {latest_date}",
+                              labels={'value': 'Percentage'},
+                              line_shape="linear",
+                              markers=True)
+
+        st.plotly_chart(fig_vertical)
