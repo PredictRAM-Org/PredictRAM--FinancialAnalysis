@@ -3,6 +3,8 @@ import json
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+from sklearn.preprocessing import MinMaxScaler
+
 
 # Function to read fundamental data from JSON files for the specified date range
 def read_fundamental_data(financial_folder, stock_name, start_date, end_date):
@@ -59,6 +61,14 @@ def read_fundamental_data(financial_folder, stock_name, start_date, end_date):
         st.write(f"Warning: Fundamental data not found for {stock_name}. Skipping. Path: {fundamental_file_path}")
         return None
 
+# Function to normalize the data using Min-Max scaling
+def normalize_data(data_df):
+    scaler = MinMaxScaler()
+    normalized_data = scaler.fit_transform(data_df.values)
+    normalized_df = pd.DataFrame(normalized_data, columns=data_df.columns, index=data_df.index)
+    return normalized_df
+
+
 # Streamlit UI
 st.title("Stock Financial Statement Analysis for Date Range")
 
@@ -94,13 +104,20 @@ if st.button("Fetch Financial Statements"):
         income_statements = fundamental_data.get('IncomeStatement', [])
         income_statement_df = pd.DataFrame(income_statements).set_index('Date').sort_index()
 
-        # Create an interactive line chart for the selected metrics
-        fig_trends = px.line(income_statement_df,
-                             x=income_statement_df.index,
-                             y=['Total Revenue/Income', 'Total Operating Expense', 'Operating Income/Profit', 'EBITDA', 'Net Income'],
-                             title=f"Trends Analysis for {stock_to_search} from {start_date} to {end_date}",
-                             labels={'value': 'Amount'},
-                             line_shape="linear",
-                             markers=True)
+        # Normalize the data for comparison
+        normalized_income_statement_df = normalize_data(income_statement_df)
 
-        st.plotly_chart(fig_trends)
+        # Create an interactive line chart for the normalized metrics
+        fig_trends_normalized = px.line(normalized_income_statement_df,
+                                        x=normalized_income_statement_df.index,
+                                        y=normalized_income_statement_df.columns,
+                                        title=f"Normalized Trends Analysis for {stock_to_search} from {start_date} to {end_date}",
+                                        labels={'value': 'Normalized Amount'},
+                                        line_shape="linear",
+                                        markers=True)
+
+        st.plotly_chart(fig_trends_normalized)
+
+        # Display original data for reference
+        st.write("Original Income Statement Data (Ascending Order):")
+        st.table(income_statement_df)
