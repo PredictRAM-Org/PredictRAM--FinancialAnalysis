@@ -100,9 +100,10 @@ if st.button("Fetch Financial Statements"):
     fundamental_data = read_fundamental_data(financial_folder, stock_to_search, start_date, end_date)
 
     if fundamental_data is not None:
-        # Extract Income Statement data
+        # Extract Income Statement data for the selected date range
         income_statements = fundamental_data.get('IncomeStatement', [])
         income_statement_df = pd.DataFrame(income_statements).set_index('Date').sort_index()
+        income_statement_df = income_statement_df.loc[start_date:end_date]
 
         # Normalize the data for comparison
         normalized_income_statement_df = normalize_data(income_statement_df)
@@ -119,5 +120,5 @@ if st.button("Fetch Financial Statements"):
         st.plotly_chart(fig_trends_normalized)
 
         # Display original data for reference
-        st.write("Original Income Statement Data (Ascending Order):")
-        st.table(income_statement_df)
+        st.write("Original Income Statement Data (Ascending Order) for Selected Date Range:")
+        st.table(income_statement_df.sort_index(ascending=True))
